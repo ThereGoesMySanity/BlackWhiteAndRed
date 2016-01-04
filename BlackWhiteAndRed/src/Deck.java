@@ -9,12 +9,13 @@ public class Deck {
 	
 	public static String cardString(String[] s){
 		String i;
-		switch (s[0].charAt(0)){
-		case 1:i="n Ace";
-		case 11:i=" Jack";
-		case 12:i=" Queen";
-		case 13:i=" King";
-		default:i=(int)(s[0].charAt(0))+"";
+		int j = s[0].charAt(0);
+		switch(j){
+		case 1:i="n Ace";break;
+		case 11:i=" Jack";break;
+		case 12:i=" Queen";break;
+		case 13:i=" King";break;
+		default:i=" "+j;break;
 		}
 		i+=" of "+s[1];
 		return i;
