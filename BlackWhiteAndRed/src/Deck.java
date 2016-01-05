@@ -11,13 +11,13 @@ public class Deck {
 		String i;
 		int j = s[0].charAt(0);
 		switch(j){
-		case 1:i="n Ace";break;
-		case 11:i=" Jack";break;
-		case 12:i=" Queen";break;
-		case 13:i=" King";break;
-		default:i=" "+j;break;
+		case 1:i="ace";break;
+		case 11:i="jack";break;
+		case 12:i="queen";break;
+		case 13:i="king";break;
+		default:i=""+j;break;
 		}
-		i+=" of "+s[1];
+		i+="_of_"+s[1]+".png";
 		return i;
 		
 	}
