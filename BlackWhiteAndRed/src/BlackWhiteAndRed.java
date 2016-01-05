@@ -9,7 +9,12 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
+import javax.swing.SwingConstants;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.awt.Color;
 
 public class BlackWhiteAndRed {
 	private int money, highestBalance;
@@ -19,12 +24,16 @@ public class BlackWhiteAndRed {
 	private int roll;
 	private String[] draw1, draw2;
 	private int wins, games;
-	private boolean RUN_FOREVER = true;
 	private JFrame frame;
-	private JTextPane txtpnWelcomeToUa;
-	private JLabel label;
-	private JLabel label_1;
-	private JLabel label_2;
+	private JTextPane instructions;
+	private JLabel dieImg;
+	private JLabel card1Img;
+	private JLabel card2Img;
+	private int stage;
+	private JLabel lblWin;
+	private JLabel lblMoney;
+	private JLabel lblDie;
+	private JButton playButton;
 	
 	public BlackWhiteAndRed(int balance){
 		money = highestBalance = balance;
@@ -32,70 +41,142 @@ public class BlackWhiteAndRed {
 		deck = new Deck();
 		key = new Scanner(System.in);
 		games = wins = 0;
+		stage = 0;
 		
 		
 		
 		frame = new JFrame();
 		frame.getContentPane().setLayout(null);
 		
-		txtpnWelcomeToUa = new JTextPane();
-		txtpnWelcomeToUa.setBounds(0, 0, 450, 90);
-		txtpnWelcomeToUa.setFont(new Font("Lucida Grande", Font.PLAIN, 12));
-		txtpnWelcomeToUa.setEditable(false);
-		txtpnWelcomeToUa.setText("Welcome to UA Casino! Current game: Black, White and Red\n$10 to play\nRules:\nRoll a die. If the result is even, you want to draw red cards, and vice versa.\nDraw a card. If it matches, draw another one. If that matches, you win $40.\nOtherwise, you lose.");
-		frame.getContentPane().add(txtpnWelcomeToUa);
+		instructions = new JTextPane();
+		instructions.setBounds(0, 0, 450, 90);
+		instructions.setFont(new Font("Lucida Sans", Font.PLAIN, 12));
+		instructions.setEditable(false);
+		instructions.setText("Welcome to UA Casino! Current game: Black, White and Red\n"
+				+ "$10 to play\n"
+				+ "Roll a die. If the result is even, "
+				+ "you want to draw red cards, and vice versa.\n"
+				+ "Draw a card. If it matches, draw another one. "
+				+ "If that matches, you win $40.\n"
+				+ "Otherwise, you lose.");
+		frame.getContentPane().add(instructions);
 		
-		label = new JLabel();
-		label.setBounds(0, 124, 150, 120);
-		frame.getContentPane().add(label);
-		label.setIcon(getimg("/1-dice-clipart-4cbRaxecg.jpeg", label));
+		dieImg = new JLabel();
+		dieImg.setBounds(0, 130, 150, 120);
+		frame.getContentPane().add(dieImg);
+		dieImg.setIcon(getimg("/1-dice-clipart-4cbRaxecg.jpeg", dieImg));
 		
-		label_1 = new JLabel();
-		label_1.setBounds(162, 102, 126, 176);
-		frame.getContentPane().add(label_1);
-		label.setIcon(getimg("/back-red_1024x1024.png", label_1));
+		card1Img = new JLabel();
+		card1Img.setBounds(165, 120, 120, 170);
+		frame.getContentPane().add(card1Img);
+		card1Img.setIcon(getimg("/back-red_1024x1024.png", card1Img));
 		
-		label_2 = new JLabel();
-		label_2.setBounds(324, 102, 126, 176);
-		frame.getContentPane().add(label_2);
-		label.setIcon(getimg("/back-red_1024x1024.png", label_2));
+		card2Img = new JLabel();
+		card2Img.setBounds(315, 120, 120, 170);
+		frame.getContentPane().add(card2Img);
+		card2Img.setIcon(getimg("/back-red_1024x1024.png", card2Img));
 		
-		JButton btnNewButton = new JButton("Roll");
-		btnNewButton.setBounds(150, 90, 150, 12);
-		frame.getContentPane().add(btnNewButton);
-
+		playButton = new JButton("Play");
+		/*
+		 * This is one of the important parts in the middle of all the nonsense!
+		 * This is where I define the method that runs when I click the button
+		 * I use the button to cycle through all the stages.
+		 */
+		playButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				switch(stage){
+				case -1:
+					lblDie.setText("");
+					card1Img.setIcon(getimg("/back-red_1024x1024.png", card1Img));
+					card2Img.setIcon(getimg("/back-red_1024x1024.png", card2Img));
+					stage++;
+				case 0: //Game has just started
+					money-=10;
+					lblMoney.setText("Money: $"+money);
+					playButton.setText("Roll");
+					break;
+				case 1:
+					stage1();
+					playButton.setText("Draw");
+					break;
+				case 2:
+					stage2();
+					break;
+				case 3:
+					stage3();
+					
+					break;
+				}
+				stage++;
+			}
+		});
+		playButton.setBounds(150, 90, 150, 24);
+		frame.getContentPane().add(playButton);
+		
+		lblMoney = new JLabel("Money: $10");
+		lblMoney.setHorizontalAlignment(SwingConstants.CENTER);
+		lblMoney.setBounds(0, 90, 150, 24);
+		frame.getContentPane().add(lblMoney);
+		
+		lblWin = new JLabel("Win %:");
+		lblWin.setHorizontalAlignment(SwingConstants.CENTER);
+		lblWin.setBounds(300, 90, 150, 24);
+		frame.getContentPane().add(lblWin);
+		
+		lblDie = new JLabel("");
+		lblDie.setForeground(Color.RED);
+		lblDie.setFont(new Font("Dialog", Font.BOLD, 20));
+		lblDie.setHorizontalAlignment(SwingConstants.CENTER);
+		lblDie.setBounds(0, 250, 150, 20);
+		frame.getContentPane().add(lblDie);
+		
+		
+		frame.setSize(450, 300);
+		frame.setResizable(false);
+		frame.setVisible(true);
 	}
+	
+	//Runs when the game ends, lose or win.
+	public void update(){
+		updateStats();
+		stage = -2;
+		playButton.setText("Play Again");
+	}
+	
+	//Runs when you lose
 	public void lose(){
-		System.out.println("You lost!");
-		printStats();
-		System.out.print("Want to play again? [Y/N]  ");
+		update();
+		JOptionPane.showMessageDialog(frame,
+			    "You are a loser.",
+			    "You Lose",
+			    JOptionPane.PLAIN_MESSAGE);
+		
 	}
+	
+	//Runs when you win
 	public void win(){
 		wins++;
 		money += 40;
-		System.out.println("You won!");
-		printStats();
-		System.out.print("Want to play again? [Y/N]  ");
-	}
-	public void start(){
-		money -= 10;
-		playGame();
-		if(money==0){
-			if(RUN_FOREVER)money=10;
-			else quit();
-		}
+		update();
+		JOptionPane.showMessageDialog(frame,
+			    "You are a winner.",
+			    "You Win",
+			    JOptionPane.PLAIN_MESSAGE);
 	}
 	
 	//Runs game
-	public void playGame(){
+	public void stage1(){
 		games++;
 		deck.shuffle();
 		roll = die.roll();
-		label.setText(""+roll);
+		lblDie.setText(""+roll);
+	}
+	public void stage2(){
 		draw1 = deck.draw();
-		label_1.setIcon(new ImageIcon(Deck.cardString(draw1)));
-		if(draw1[1].equals("Spades")
-				||draw1[1].equals("Clubs")){
+		String s = Deck.cardString(draw1);
+		card1Img.setIcon(getimg(s, card1Img));
+		if(draw1[1].equals("spades")
+				||draw1[1].equals("clubs")){
 			if(roll%2==1){
 				lose();
 				return;
@@ -106,10 +187,12 @@ public class BlackWhiteAndRed {
 				return;
 			}
 		}
+	}
+	public void stage3(){
 		draw2 = deck.draw();
-		label_1.setIcon(new ImageIcon(Deck.cardString(draw2)));
-		if(draw2[1].equals("Spades")
-				||draw2[1].equals("Clubs")){
+		card2Img.setIcon(getimg(Deck.cardString(draw2), card2Img));
+		if(draw2[1].equals("spades")
+				||draw2[1].equals("clubs")){
 			if(roll%2==1){
 				lose();
 				return;
@@ -123,22 +206,25 @@ public class BlackWhiteAndRed {
 		}
 		win();
 	}
-	public void printStats(){
-
-		System.out.printf("Win percentage: %.4f%%%n", (double)wins/games); 
-		System.out.println("Games played: "+games); 
-		System.out.printf("Current balance: $%d.00%n", money);
+	
+	//Updates various statistics
+	public void updateStats(){
+		lblMoney.setText("Money: $"+money);
+		lblWin.setText(String.format("Win %%: %.3f%%%n", (double)wins/games));
 		if(money>highestBalance)highestBalance=money;
 		if(money==0){
-			System.out.println("You're broke.");
-			System.out.println("You should've quit when you had $"+highestBalance);
+			quit();
 		}
 	}
+	
+	//Handles exiting the game
 	public void quit(){
 		key.close();
-		System.out.println("Thanks for playing!");
 		System.exit(0);
 	}
+	
+	
+	//Convert files into images for use in the JLabels
 	private ImageIcon getimg(String image, JLabel label){
 		BufferedImage img = null;
 		

@@ -24,7 +24,7 @@ public class Deck {
 	
 	public Deck(){
 		rand = new Random();
-		suits = new String[]{"Spades","Hearts","Diamonds","Clubs"};
+		suits = new String[]{"spades","hearts","diamonds","clubs"};
 		deck = new ArrayList<String[]>();
 		shuffle();
 	}
