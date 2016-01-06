@@ -3,6 +3,8 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -15,6 +17,9 @@ import javax.swing.SwingConstants;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.Color;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.SystemColor;
 
 public class BlackWhiteAndRed {
 	private int money, highestBalance;
@@ -34,7 +39,6 @@ public class BlackWhiteAndRed {
 	private JLabel lblMoney;
 	private JLabel lblDie;
 	private JButton playButton;
-	
 	public BlackWhiteAndRed(int balance){
 		money = highestBalance = balance;
 		die = new Die();
@@ -49,6 +53,7 @@ public class BlackWhiteAndRed {
 		frame.getContentPane().setLayout(null);
 		
 		instructions = new JTextPane();
+		instructions.setBackground(SystemColor.window);
 		instructions.setBounds(0, 0, 450, 90);
 		instructions.setFont(new Font("Lucida Sans", Font.PLAIN, 12));
 		instructions.setEditable(false);
@@ -62,16 +67,37 @@ public class BlackWhiteAndRed {
 		frame.getContentPane().add(instructions);
 		
 		dieImg = new JLabel();
+		dieImg.addMouseListener(new MouseAdapter() {  //This makes it so if you click the die picture, it rolls it
+			public void mousePressed(MouseEvent e) {
+				if(stage == 1){
+					gameSwitch(1);
+				}
+			}
+		});
 		dieImg.setBounds(0, 130, 150, 120);
 		frame.getContentPane().add(dieImg);
 		dieImg.setIcon(getimg("/1-dice-clipart-4cbRaxecg.jpeg", dieImg));
 		
 		card1Img = new JLabel();
+		card1Img.addMouseListener(new MouseAdapter() {  //This makes it so if you click the card, it flips
+			public void mousePressed(MouseEvent e) {
+				if(stage == 2){
+					gameSwitch(2);
+				}
+			}
+		});
 		card1Img.setBounds(165, 120, 120, 170);
 		frame.getContentPane().add(card1Img);
 		card1Img.setIcon(getimg("/back-red_1024x1024.png", card1Img));
 		
 		card2Img = new JLabel();
+		card2Img.addMouseListener(new MouseAdapter() {  //This makes it... you get the idea
+			public void mousePressed(MouseEvent e) {
+				if(stage == 3){
+					gameSwitch(3);
+				}
+			}
+		});
 		card2Img.setBounds(315, 120, 120, 170);
 		frame.getContentPane().add(card2Img);
 		card2Img.setIcon(getimg("/back-red_1024x1024.png", card2Img));
@@ -84,30 +110,7 @@ public class BlackWhiteAndRed {
 		 */
 		playButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				switch(stage){
-				case -1:
-					lblDie.setText("");
-					card1Img.setIcon(getimg("/back-red_1024x1024.png", card1Img));
-					card2Img.setIcon(getimg("/back-red_1024x1024.png", card2Img));
-					stage++;
-				case 0: //Game has just started
-					money-=10;
-					lblMoney.setText("Money: $"+money);
-					playButton.setText("Roll");
-					break;
-				case 1:
-					stage1();
-					playButton.setText("Draw");
-					break;
-				case 2:
-					stage2();
-					break;
-				case 3:
-					stage3();
-					
-					break;
-				}
-				stage++;
+				gameSwitch(stage);
 			}
 		});
 		playButton.setBounds(150, 90, 150, 24);
@@ -119,6 +122,13 @@ public class BlackWhiteAndRed {
 		frame.getContentPane().add(lblMoney);
 		
 		lblWin = new JLabel("Win %:");
+		lblWin.addMouseListener(new MouseAdapter() {   //Easter egg: if you click on the Win % line,
+			public void mousePressed(MouseEvent e) {   //it plays automatically 500 times!
+				for(int i = 0; i < 500; i++){
+					gameSwitch(stage);
+				}
+			}
+		});
 		lblWin.setHorizontalAlignment(SwingConstants.CENTER);
 		lblWin.setBounds(300, 90, 150, 24);
 		frame.getContentPane().add(lblWin);
@@ -131,7 +141,7 @@ public class BlackWhiteAndRed {
 		frame.getContentPane().add(lblDie);
 		
 		
-		frame.setSize(450, 300);
+		frame.setSize(450, 320);
 		frame.setResizable(false);
 		frame.setVisible(true);
 	}
@@ -145,11 +155,12 @@ public class BlackWhiteAndRed {
 	
 	//Runs when you lose
 	public void lose(){
-		update();
 		JOptionPane.showMessageDialog(frame,
 			    "You are a loser.",
 			    "You Lose",
 			    JOptionPane.PLAIN_MESSAGE);
+		update();
+		
 		
 	}
 	
@@ -157,11 +168,12 @@ public class BlackWhiteAndRed {
 	public void win(){
 		wins++;
 		money += 40;
-		update();
 		JOptionPane.showMessageDialog(frame,
 			    "You are a winner.",
 			    "You Win",
 			    JOptionPane.PLAIN_MESSAGE);
+		update();
+		
 	}
 	
 	//Runs game
@@ -213,7 +225,22 @@ public class BlackWhiteAndRed {
 		lblWin.setText(String.format("Win %%: %.3f%%%n", (double)wins/games));
 		if(money>highestBalance)highestBalance=money;
 		if(money==0){
-			quit();
+			String s = (String)JOptionPane.showInputDialog(frame,
+				    "You're out of money.\nAdd more:",
+				    "You Lose",
+				    JOptionPane.PLAIN_MESSAGE);
+			Pattern p = Pattern.compile("\\$?(\\d+)");
+			Matcher regex = p.matcher(s);
+			while(!regex.matches()){
+				String s2 = (String)JOptionPane.showInputDialog(frame,
+					    "That's not an amount of money...",
+					    "You Lose",
+					    JOptionPane.PLAIN_MESSAGE);
+				regex = p.matcher(s2);
+			}
+			money += Integer.parseInt(regex.group(1));
+			lblMoney.setText("Money: $"+money);
+			if(money == 0)quit();
 		}
 	}
 	
@@ -236,5 +263,33 @@ public class BlackWhiteAndRed {
 		return new ImageIcon(img.getScaledInstance(label.getWidth(), label.getHeight(),
         Image.SCALE_SMOOTH));
 		
+	}
+	
+	//This moves through and runs the game
+	private void gameSwitch(int i){
+		switch(i){
+		case -1:
+			lblDie.setText("");
+			card1Img.setIcon(getimg("/back-red_1024x1024.png", card1Img));
+			card2Img.setIcon(getimg("/back-red_1024x1024.png", card2Img));
+			stage++;
+		case 0: //Game has just started
+			money-=10;
+			lblMoney.setText("Money: $"+money);
+			playButton.setText("Roll");
+			break;
+		case 1:
+			stage1();
+			playButton.setText("Draw");
+			break;
+		case 2:
+			stage2();
+			break;
+		case 3:
+			stage3();
+			
+			break;
+		}
+		stage++;
 	}
 }
