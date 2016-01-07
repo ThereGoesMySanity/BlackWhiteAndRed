@@ -55,7 +55,7 @@ public class BlackWhiteAndRed {
 
 
 		frame = new JFrame();
-		frame.getContentPane().setLayout(null);
+		frame.setLayout(null);
 
 		instructions = new JTextPane();
 		instructions.setBackground(SystemColor.window);
@@ -69,7 +69,7 @@ public class BlackWhiteAndRed {
 				+ "Draw a card. If it matches, draw another one. "
 				+ "If that matches, you win $40.\n"
 				+ "Otherwise, you lose.");
-		frame.getContentPane().add(instructions);
+		frame.add(instructions);
 
 		dieImg = new JLabel();
 		dieImg.addMouseListener(new MouseAdapter() {  //This makes it so if you click the die picture, it rolls it
@@ -80,7 +80,7 @@ public class BlackWhiteAndRed {
 			}
 		});
 		dieImg.setBounds(0, 130, 150, 120);
-		frame.getContentPane().add(dieImg);
+		frame.add(dieImg);
 		dieImg.setIcon(getimg("/1-dice-clipart-4cbRaxecg.jpeg", dieImg));
 
 		card1Img = new JLabel();
@@ -92,7 +92,7 @@ public class BlackWhiteAndRed {
 			}
 		});
 		card1Img.setBounds(165, 120, 120, 170);
-		frame.getContentPane().add(card1Img);
+		frame.add(card1Img);
 		card1Img.setIcon(getimg("/back-red_1024x1024.png", card1Img));
 
 		card2Img = new JLabel();
@@ -104,7 +104,7 @@ public class BlackWhiteAndRed {
 			}
 		});
 		card2Img.setBounds(315, 120, 120, 170);
-		frame.getContentPane().add(card2Img);
+		frame.add(card2Img);
 		card2Img.setIcon(getimg("/back-red_1024x1024.png", card2Img));
 
 		playButton = new JButton("Play");
@@ -119,24 +119,24 @@ public class BlackWhiteAndRed {
 			}
 		});
 		playButton.setBounds(150, 90, 150, 24);
-		frame.getContentPane().add(playButton);
+		frame.add(playButton);
 
 		lblMoney = new JLabel("Money: $"+money);
 		lblMoney.setHorizontalAlignment(SwingConstants.CENTER);
 		lblMoney.setBounds(0, 90, 150, 24);
-		frame.getContentPane().add(lblMoney);
+		frame.add(lblMoney);
 
 		lblWin = new JLabel("Win %:");
 		lblWin.setHorizontalAlignment(SwingConstants.CENTER);
 		lblWin.setBounds(300, 90, 150, 24);
-		frame.getContentPane().add(lblWin);
+		frame.add(lblWin);
 
 		lblDie = new JLabel("");
 		lblDie.setForeground(Color.RED);
 		lblDie.setFont(new Font("Dialog", Font.BOLD, 20));
 		lblDie.setHorizontalAlignment(SwingConstants.CENTER);
 		lblDie.setBounds(0, 250, 150, 20);
-		frame.getContentPane().add(lblDie);
+		frame.add(lblDie);
 
 
 		frame.setSize(450, 320);
@@ -145,14 +145,14 @@ public class BlackWhiteAndRed {
 	}
 
 	//Runs when the game ends, lose or win.
-	public void update(){
+	private void update(){
 		updateStats();
 		stage = -2;
 		playButton.setText("Play Again");
 	}
 
 	//Runs when you lose
-	public void lose(){
+	private void lose(){
 		JOptionPane.showMessageDialog(frame,
 
 				"You are a loser.",
@@ -162,7 +162,7 @@ public class BlackWhiteAndRed {
 	}
 
 	//Runs when you win
-	public void win(){
+	private void win(){
 		wins++;
 		money += 40;
 		JOptionPane.showMessageDialog(frame,
@@ -173,13 +173,13 @@ public class BlackWhiteAndRed {
 	}
 
 	//Runs game
-	public void stage1(){
+	private void stage1(){
 		games++;
 		deck.shuffle();
 		roll = die.roll();
 		lblDie.setText(""+roll);
 	}
-	public void stage2(){
+	private void stage2(){
 		draw1 = deck.draw();
 		String s = Deck.cardString(draw1);
 		card1Img.setIcon(getimg(s, card1Img));
@@ -196,7 +196,7 @@ public class BlackWhiteAndRed {
 			}
 		}
 	}
-	public void stage3(){
+	private void stage3(){
 		draw2 = deck.draw();
 		card2Img.setIcon(getimg(Deck.cardString(draw2), card2Img));
 		if(draw2[1].equals("spades")
@@ -216,11 +216,11 @@ public class BlackWhiteAndRed {
 	}
 
 	//Updates various statistics
-	public void updateStats(){
+	private void updateStats(){
 		lblMoney.setText("Money: $"+money);
-		lblWin.setText(String.format("Win %%: %.3f%%%n", (double)wins/games));
+		lblWin.setText(String.format("Win %%: %.2f%%%n", (double)wins*100/games));
 		if(money>highestBalance)highestBalance=money;
-		if(money==0){
+		if(money<=0){
 			String s = (String)JOptionPane.showInputDialog(frame,
 					"You're out of money.\nAdd more:",
 					"You Lose",
@@ -236,12 +236,12 @@ public class BlackWhiteAndRed {
 			}
 			money += Integer.parseInt(regex.group(1));
 			lblMoney.setText("Money: $"+money);
-			if(money == 0)quit();
+			if(money <= 0)quit();
 		}
 	}
 
 	//Handles exiting the game
-	public void quit(){
+	private void quit(){
 		key.close();
 		System.exit(0);
 	}
@@ -271,6 +271,22 @@ public class BlackWhiteAndRed {
 			stage++;
 		case 0: //Game has just started
 			money-=10;
+			if(money<0){
+				String s = (String)JOptionPane.showInputDialog(frame,
+						"You don't have enough money.\nAdd more:",
+						"You Can't Play",
+						JOptionPane.PLAIN_MESSAGE);
+				Pattern p = Pattern.compile("\\$?(\\d+)");
+				Matcher regex = p.matcher(s);
+				while(!regex.matches()){
+					String s2 = (String)JOptionPane.showInputDialog(frame,
+							"That's not an amount of money...",
+							"You Can't Play",
+							JOptionPane.PLAIN_MESSAGE);
+					regex = p.matcher(s2);
+				}
+				money += Integer.parseInt(regex.group(1));
+			}
 			lblMoney.setText("Money: $"+money);
 			playButton.setText("Roll");
 			break;
