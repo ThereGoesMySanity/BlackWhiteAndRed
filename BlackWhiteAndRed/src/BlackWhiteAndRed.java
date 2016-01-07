@@ -48,6 +48,7 @@ public class BlackWhiteAndRed {
 		money = highestBalance = balance;
 		die = new Die();
 		deck = new Deck();
+		
 		key = new Scanner(System.in);
 		games = wins = 0;
 		stage = 0;
