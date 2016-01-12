@@ -41,14 +41,17 @@ public class BlackWhiteAndRed {
 	private JButton playButton;
 
 	public BlackWhiteAndRed(){
-		this(Integer.parseInt(JOptionPane.showInputDialog("How much money do you want to start with?")));
+		this(Integer.parseInt(JOptionPane.showInputDialog("How much money do you want to start with?", "Don't put a $ or it'll crash")));
 	}
-
+	/**
+	 * @wbp.parser.constructor
+	 */
 	public BlackWhiteAndRed(int balance){
+
 		money = highestBalance = balance;
 		die = new Die();
 		deck = new Deck();
-		
+
 		key = new Scanner(System.in);
 		games = wins = 0;
 		stage = 0;
@@ -56,7 +59,7 @@ public class BlackWhiteAndRed {
 
 
 		frame = new JFrame();
-		frame.setLayout(null);
+		frame.getContentPane().setLayout(null);
 
 		instructions = new JTextPane();
 		instructions.setBackground(SystemColor.window);
@@ -70,7 +73,7 @@ public class BlackWhiteAndRed {
 				+ "Draw a card. If it matches, draw another one. "
 				+ "If that matches, you win $40.\n"
 				+ "Otherwise, you lose.");
-		frame.add(instructions);
+		frame.getContentPane().add(instructions);
 
 		dieImg = new JLabel();
 		dieImg.addMouseListener(new MouseAdapter() {  //This makes it so if you click the die picture, it rolls it
@@ -81,7 +84,7 @@ public class BlackWhiteAndRed {
 			}
 		});
 		dieImg.setBounds(0, 130, 150, 120);
-		frame.add(dieImg);
+		frame.getContentPane().add(dieImg);
 		dieImg.setIcon(getimg("/1-dice-clipart-4cbRaxecg.jpeg", dieImg));
 
 		card1Img = new JLabel();
@@ -93,7 +96,7 @@ public class BlackWhiteAndRed {
 			}
 		});
 		card1Img.setBounds(165, 120, 120, 170);
-		frame.add(card1Img);
+		frame.getContentPane().add(card1Img);
 		card1Img.setIcon(getimg("/back-red_1024x1024.png", card1Img));
 
 		card2Img = new JLabel();
@@ -105,7 +108,7 @@ public class BlackWhiteAndRed {
 			}
 		});
 		card2Img.setBounds(315, 120, 120, 170);
-		frame.add(card2Img);
+		frame.getContentPane().add(card2Img);
 		card2Img.setIcon(getimg("/back-red_1024x1024.png", card2Img));
 
 		playButton = new JButton("Play");
@@ -119,107 +122,64 @@ public class BlackWhiteAndRed {
 				gameSwitch(stage);
 			}
 		});
-		playButton.setBounds(150, 90, 150, 24);
-		frame.add(playButton);
+		playButton.setBounds(125, 90, 100, 24);
+		frame.getContentPane().add(playButton);
 
 		lblMoney = new JLabel("Money: $"+money);
 		lblMoney.setHorizontalAlignment(SwingConstants.CENTER);
 		lblMoney.setBounds(0, 90, 150, 24);
-		frame.add(lblMoney);
+		frame.getContentPane().add(lblMoney);
 
 		lblWin = new JLabel("Win %:");
 		lblWin.setHorizontalAlignment(SwingConstants.CENTER);
-		lblWin.setBounds(300, 90, 150, 24);
-		frame.add(lblWin);
+		lblWin.setBounds(325, 90, 125, 24);
+		frame.getContentPane().add(lblWin);
 
 		lblDie = new JLabel("");
 		lblDie.setForeground(Color.RED);
 		lblDie.setFont(new Font("Dialog", Font.BOLD, 20));
 		lblDie.setHorizontalAlignment(SwingConstants.CENTER);
 		lblDie.setBounds(0, 250, 150, 20);
-		frame.add(lblDie);
+		frame.getContentPane().add(lblDie);
+
+		JButton btnAutoplay = new JButton("Autoplay");
+		btnAutoplay.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String s = (String)JOptionPane.showInputDialog(frame,
+						"How many times?",
+						"Autorun",
+						JOptionPane.PLAIN_MESSAGE);
+				autoRun(Integer.parseInt(s));
+			}
+		});
+		btnAutoplay.setBounds(225, 90, 100, 24);
+		frame.getContentPane().add(btnAutoplay);
 
 
 		frame.setSize(450, 320);
 		frame.setResizable(false);
 		frame.setVisible(true);
 	}
+	//Makes the game run a bunch
+	protected void autoRun(int times) {
+		for(int i = 0; i < times; i++){
+			money-=10;
+			games++;
+			if((int)(Math.random()*2)*(int)(Math.random()*51/26)>0){
+				wins++;
+				money+=40;
+			}
+		}
+		System.out.println("done");
+		update(false);
+	}
 
 	//Runs when the game ends, lose or win.
-	private void update(){
-		updateStats();
-		stage = -2;
-		playButton.setText("Play Again");
-	}
-
-	//Runs when you lose
-	private void lose(){
-		JOptionPane.showMessageDialog(frame,
-
-				"You are a loser.",
-				"You Lose",
-				JOptionPane.PLAIN_MESSAGE);
-		update();
-	}
-
-	//Runs when you win
-	private void win(){
-		wins++;
-		money += 40;
-		JOptionPane.showMessageDialog(frame,
-				"You are a winner.",
-				"You Win",
-				JOptionPane.PLAIN_MESSAGE);
-		update();
-	}
-
-	//Runs game
-	private void stage1(){
-		games++;
-		deck.shuffle();
-		roll = die.roll();
-		lblDie.setText(""+roll);
-	}
-	private void stage2(){
-		draw1 = deck.draw();
-		String s = Deck.cardString(draw1);
-		card1Img.setIcon(getimg(s, card1Img));
-		if(draw1[1].equals("spades")
-				||draw1[1].equals("clubs")){
-			if(roll%2==1){
-				lose();
-				return;
-			}
-		}else{
-			if(roll%2==0){
-				lose();
-				return;
-			}
+	private void update(boolean infinite){
+		if(!infinite){
+			lblMoney.setText("Money: $"+money);
+			lblWin.setText(String.format("Win %%: %.2f%%%n", (double)wins*100/games));
 		}
-	}
-	private void stage3(){
-		draw2 = deck.draw();
-		card2Img.setIcon(getimg(Deck.cardString(draw2), card2Img));
-		if(draw2[1].equals("spades")
-				||draw2[1].equals("clubs")){
-			if(roll%2==1){
-				lose();
-				return;
-			}
-		}else{
-			if(roll%2==0){
-				lose();
-				return;
-			}
-
-		}
-		win();
-	}
-
-	//Updates various statistics
-	private void updateStats(){
-		lblMoney.setText("Money: $"+money);
-		lblWin.setText(String.format("Win %%: %.2f%%%n", (double)wins*100/games));
 		if(money>highestBalance)highestBalance=money;
 		if(money<=0){
 			String s = (String)JOptionPane.showInputDialog(frame,
@@ -239,6 +199,79 @@ public class BlackWhiteAndRed {
 			lblMoney.setText("Money: $"+money);
 			if(money <= 0)quit();
 		}
+		stage = -2;
+		if(!infinite)playButton.setText("Play Again");
+	}
+
+	//Runs when you lose
+	private void lose(boolean infinite){
+		if(!infinite){
+			JOptionPane.showMessageDialog(frame,
+					"You are a loser.",
+					"You Lose",
+					JOptionPane.PLAIN_MESSAGE);
+		}
+		update(infinite);
+	}
+
+	//Runs when you win
+	private void win(boolean infinite){
+		wins++;
+		money += 40;
+		if(!infinite){
+			JOptionPane.showMessageDialog(frame,
+					"You are a winner.",
+					"You Win",
+					JOptionPane.PLAIN_MESSAGE);
+		}
+		update(infinite);
+	}
+
+	//Runs game
+	private void stage1(boolean infinite){
+		games++;
+		deck.shuffle();
+		roll = die.roll();
+		if(!infinite)lblDie.setText(""+roll);
+	}
+	private void stage2(boolean infinite){
+		draw1 = deck.draw();
+		if(!infinite){
+			String s = Deck.cardString(draw1);
+			card1Img.setIcon(getimg(s, card1Img));
+		}
+		if(draw1[1].equals("spades")
+				||draw1[1].equals("clubs")){
+			if(roll%2==1){
+				lose(infinite);
+				return;
+			}
+		}else{
+			if(roll%2==0){
+				lose(infinite);
+				return;
+			}
+		}
+	}
+	private void stage3(boolean infinite){
+		draw2 = deck.draw();
+		if(!infinite){
+			card2Img.setIcon(getimg(Deck.cardString(draw2), card2Img));
+		}
+		if(draw2[1].equals("spades")
+				||draw2[1].equals("clubs")){
+			if(roll%2==1){
+				lose(infinite);
+				return;
+			}
+		}else{
+			if(roll%2==0){
+				lose(infinite);
+				return;
+			}
+
+		}
+		win(infinite);
 	}
 
 	//Handles exiting the game
@@ -292,14 +325,14 @@ public class BlackWhiteAndRed {
 			playButton.setText("Roll");
 			break;
 		case 1:
-			stage1();
+			stage1(false);
 			playButton.setText("Draw");
 			break;
 		case 2:
-			stage2();
+			stage2(false);
 			break;
 		case 3:
-			stage3();
+			stage3(false);
 
 			break;
 		}
