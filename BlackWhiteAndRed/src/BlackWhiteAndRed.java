@@ -22,7 +22,7 @@ import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
 
 public class BlackWhiteAndRed {
-	private int money, highestBalance;
+	private long money, highestBalance;
 	private Die die;
 	private Deck deck;
 	private Scanner key;
@@ -41,14 +41,14 @@ public class BlackWhiteAndRed {
 	private JButton playButton;
 
 	public BlackWhiteAndRed(){
-		this(Integer.parseInt(JOptionPane.showInputDialog("How much money do you want to start with?", "Don't put a $ or it'll crash")));
+		this(Long.parseLong(JOptionPane.showInputDialog("How much money do you want to start with?", "Don't put a $ or it'll crash")));
 	}
 	/**
 	 * @wbp.parser.constructor
 	 */
-	public BlackWhiteAndRed(int balance){
+	public BlackWhiteAndRed(long l){
 
-		money = highestBalance = balance;
+		money = highestBalance = l;
 		die = new Die();
 		deck = new Deck();
 
@@ -169,8 +169,8 @@ public class BlackWhiteAndRed {
 				wins++;
 				money+=40;
 			}
+			if(money<=0)update(true);
 		}
-		System.out.println("done");
 		update(false);
 	}
 
