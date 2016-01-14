@@ -161,7 +161,7 @@ public class BlackWhiteAndRed {
 		frame.setVisible(true);
 	}
 	//Makes the game run a bunch
-	protected void autoRun(int times) {
+	private void autoRun(int times) {
 		for(int i = 0; i < times; i++){
 			money-=10;
 			games++;
